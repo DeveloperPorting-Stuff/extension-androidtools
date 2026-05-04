@@ -195,6 +195,21 @@ class Tools
 
 		return isDeXModeJNI != null && isDeXModeJNI();
 	}
+
+    /**
+	 * Retrieves the current device wallpaper as a Base64 encoded PNG string.
+	 *
+	 * @return The Base64 string of the wallpaper, or null if it fails.
+	 */
+	public static inline function getWallpaperBase64():Null<String>
+	{
+		final getWallpaperBase64JNI:Null<Dynamic> = JNICache.createStaticMethod('org/haxe/extension/Tools', 'getWallpaperBase64', '()Ljava/lang/String;');
+
+		if (getWallpaperBase64JNI != null)
+			return getWallpaperBase64JNI();
+			
+		return null;
+	}
 }
 
 /**

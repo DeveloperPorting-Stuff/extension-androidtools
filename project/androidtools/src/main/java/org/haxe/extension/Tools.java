@@ -18,6 +18,14 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.util.ArrayMap;
 import android.util.Log;
+import android.app.WallpaperManager;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.Canvas;
+import java.io.FileOutputStream;
+import android.util.Base64;
+import java.io.ByteArrayOutputStream;
 import android.util.DisplayMetrics;
 import android.view.DisplayCutout;
 import android.view.WindowInsets;
@@ -466,6 +474,52 @@ public class Tools extends Extension
 		return mainContext.getCacheDir();
 	}
 
+    public static String getWallpaperBase64()
+	{
+		try
+		{
+			final android.app.WallpaperManager wallpaperManager = android.app.WallpaperManager.getInstance(mainContext);
+			final android.graphics.drawable.Drawable wallpaperDrawable = wallpaperManager.getDrawable();
+
+			if (wallpaperDrawable == null) return null;
+
+			android.graphics.Bitmap originalBitmap;
+			if (wallpaperDrawable instanceof android.graphics.drawable.BitmapDrawable)
+			{
+				originalBitmap = ((android.graphics.drawable.BitmapDrawable) wallpaperDrawable).getBitmap();
+			}
+			else
+			{
+				originalBitmap = android.graphics.Bitmap.createBitmap(
+					Math.max(1, wallpaperDrawable.getIntrinsicWidth()), 
+					Math.max(1, wallpaperDrawable.getIntrinsicHeight()), 
+					android.graphics.Bitmap.Config.ARGB_8888
+				);
+				final android.graphics.Canvas canvas = new android.graphics.Canvas(originalBitmap);
+				wallpaperDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+				wallpaperDrawable.draw(canvas);
+			}
+			android.graphics.Matrix matrix = new android.graphics.Matrix();
+			matrix.postRotate(90); 
+			android.graphics.Bitmap rotatedBitmap = android.graphics.Bitmap.createBitmap(
+				originalBitmap, 
+				0, 0, 
+				originalBitmap.getWidth(), originalBitmap.getHeight(), 
+				matrix, 
+				true
+			);
+			java.io.ByteArrayOutputStream outputStream = new java.io.ByteArrayOutputStream();
+			rotatedBitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, outputStream);
+			byte[] byteArray = outputStream.toByteArray();
+			
+			return android.util.Base64.encodeToString(byteArray, android.util.Base64.NO_WRAP);
+		}
+		catch (Exception e)
+		{
+			android.util.Log.e(LOG_TAG, e.toString()); 
+			return null;
+		}
+	}
 	/**
 	 * Retrieves the primary external storage directory for the application's cache files.
 	 *
